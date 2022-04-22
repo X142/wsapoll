@@ -159,13 +159,16 @@ int main_2()
 
 	int ret_wsapoll;
 	int count = NUM_server_Sock;
-	for(;;)
+	for (;;)
 	{
 		ret_wsapoll = WSAPoll(fdarray, count, 2500);
 		if (ret_wsapoll == SOCKET_ERROR)
 			throw "WSAPoll";
 		else if (ret_wsapoll == 0)
+		{
+			std::cout << "timeout..." << std::endl;
 			continue;
+		}
 		else
 		{
 			for (i = 0; i < NUM_server_Sock; i++)
@@ -174,9 +177,10 @@ int main_2()
 				{
 					if (count == NUM_Sock)
 						throw "ソケットをこれ以上受付できません";
-					fdarray[count].fd = servers[i].Accept();
+					fdarray[count].fd = servers[i].Accept(); // バグ１：accept から抜けない
 					fdarray[count].events = POLLIN;
-					clients[i] = Client(fdarray[count].fd); // ここにバグがある...
+					// clients[i] = Client(fdarray[count].fd); // バグ２：構文が間違っていると思う
+					std::cout << "server, i: " << i << ", count: " << count <<  std::endl;
 					count++;
 				}
 			}
@@ -184,8 +188,10 @@ int main_2()
 			{
 				if (fdarray[NUM_server_Sock + i].revents | POLLIN)
 				{
+					std::cout << "client, i: " << i << ", count: " << count <<  std::endl;
 					clients[i].Read();
 				}
+			}
 		}
 	}
 
