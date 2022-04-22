@@ -159,7 +159,7 @@ int main_2()
 
 	int ret_wsapoll;
 	int count = NUM_server_Sock;
-	while(count < NUM_Sock)
+	for(;;)
 	{
 		ret_wsapoll = WSAPoll(fdarray, count, 2500);
 		if (ret_wsapoll == SOCKET_ERROR)
@@ -172,10 +172,12 @@ int main_2()
 			{
 				if (fdarray[i].revents | POLLIN)
 				{
-						fdarray[count].fd = servers[i].Accept();
-						fdarray[count].events = POLLOUT;
-						clients[i] = Client(fdarray[count].fd); // ここにバグがある...
-						count++;
+					if (count == NUM_Sock)
+						throw "ソケットをこれ以上受付できません";
+					fdarray[count].fd = servers[i].Accept();
+					fdarray[count].events = POLLOUT;
+					clients[i] = Client(fdarray[count].fd); // ここにバグがある...
+					count++;
 				}
 			}
 			for (i = 0; i < count - NUM_server_Sock; i++)
