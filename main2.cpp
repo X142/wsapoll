@@ -175,7 +175,7 @@ int main_2()
 					if (count == NUM_Sock)
 						throw "ソケットをこれ以上受付できません";
 					fdarray[count].fd = servers[i].Accept();
-					fdarray[count].events = POLLOUT;
+					fdarray[count].events = POLLIN;
 					clients[i] = Client(fdarray[count].fd); // ここにバグがある...
 					count++;
 				}
