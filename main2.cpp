@@ -80,6 +80,7 @@ public:
 	{
 		if (mc_fd_sock_client != INVALID_SOCKET)
 			closesocket(mc_fd_sock_client);
+		mc_fd_sock_client = other.mc_fd_sock_client;
 		return *this;
 	}
 	// ----------------
@@ -128,7 +129,7 @@ public:
 		std::cout << "addr_client.sin6_port is " << addr_client.sin6_port << std::endl;
 	}
 private:
-	const SOCKET mc_fd_sock_client;
+	SOCKET mc_fd_sock_client;
 };
 
 int main_2()
@@ -179,7 +180,7 @@ int main_2()
 						throw "ソケットをこれ以上受付できません";
 					fdarray[count].fd = servers[i].Accept(); // バグ１：accept から抜けない
 					fdarray[count].events = POLLIN;
-					// clients[i] = Client(fdarray[count].fd); // バグ２：構文が間違っていると思う
+					clients[i] = Client(fdarray[count].fd); // バグ２：構文が間違っていると思う
 					std::cout << "server, i: " << i << ", count: " << count <<  std::endl;
 					count++;
 				}
