@@ -74,16 +74,6 @@ class Client
 {
 public:
 	Client(const SOCKET fd_sock_client) : mc_fd_sock_client{ fd_sock_client } {}
-	// 追加 ----------------
-	Client(const Client& other) : mc_fd_sock_client{ other.mc_fd_sock_client } {}
-	Client& operator=(const Client& other)
-	{
-		if (mc_fd_sock_client != INVALID_SOCKET)
-			closesocket(mc_fd_sock_client);
-		mc_fd_sock_client = other.mc_fd_sock_client;
-		return *this;
-	}
-	// ----------------
 	~Client()
 	{
 		if (mc_fd_sock_client != INVALID_SOCKET)
@@ -128,8 +118,10 @@ public:
 		std::cout << "addr_client.sin6_addr is " << str_client_ip_addr << std::endl;
 		std::cout << "addr_client.sin6_port is " << addr_client.sin6_port << std::endl;
 	}
+
+	//void setter(SOCKET s) { mc_fd_sock_client = s; }
 private:
-	SOCKET mc_fd_sock_client;
+	const SOCKET mc_fd_sock_client;
 };
 
 int main_2()
@@ -178,11 +170,13 @@ int main_2()
 				{
 					if (count == NUM_Sock)
 						throw "ソケットをこれ以上受付できません";
-					fdarray[count].fd = servers[i].Accept(); // バグ１：accept から抜けない
+					fdarray[count].fd = servers[i].Accept();
 					fdarray[count].events = POLLIN;
-					clients[i] = Client(fdarray[count].fd); // バグ２：構文が間違っていると思う
-					std::cout << "server, i: " << i << ", count: " << count <<  std::endl;
+					// バグ：一時オブジェクトが生成されて、代入後に closesocket が起こってしまっていた
+					// 何か変なコードを書いていたので、std:: list を使って書き直す
+					// clients[i].setter(fdarray[count].fd); // 一時的に
 					count++;
+					std::cout << "server, i: " << i << ", count: " << count <<  std::endl;
 				}
 			}
 			for (i = 0; i < count - NUM_server_Sock; i++)
